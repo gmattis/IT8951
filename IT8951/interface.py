@@ -1,13 +1,12 @@
 
 from . import constants
-from .constants import Pins, Commands, Registers, DisplayModes, PixelModes
+from .constants import Commands, Registers, DisplayModes, PixelModes
 from .spi import SPI
 
 from time import sleep
 from os import geteuid
 from sys import exit
 
-import RPi.GPIO as GPIO
 import numpy as np
 
 class EPD:
@@ -33,15 +32,7 @@ class EPD:
 
         self.spi = SPI()
 
-        GPIO.setmode(GPIO.BCM)
-        GPIO.setwarnings(False)
-        GPIO.setup(Pins.HRDY, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-        GPIO.setup(Pins.RESET, GPIO.OUT, initial=GPIO.HIGH)
-
-        # reset
-        GPIO.output(Pins.RESET, GPIO.LOW)
-        sleep(0.1)
-        GPIO.output(Pins.RESET, GPIO.HIGH)
+        self.spi.reset()
 
         self.width            = None
         self.height           = None
@@ -58,8 +49,7 @@ class EPD:
         self.set_vcom(vcom)
 
     def __del__(self):
-        if not self.early_exit:
-            GPIO.cleanup()
+        pass
 
     def load_img_area(self, buf, rotate_mode=constants.Rotate.NONE, xy=None, dims=None):
         '''

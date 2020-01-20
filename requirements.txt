@@ -1,2 +1,4 @@
+Cython
 numpy
 pillow
+libbcm2835

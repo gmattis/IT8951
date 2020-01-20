@@ -7,7 +7,7 @@ if version_info[0] != 3:
     raise RuntimeError("This module is written for Python 3.")
 
 # enable this option if you want to rebuild the .c file yourself with cython
-USE_CYTHON = False or "USE_CYTHON" in os.environ
+USE_CYTHON = True or "USE_CYTHON" in os.environ
 
 if USE_CYTHON:
     ext = '.pyx'
@@ -17,8 +17,7 @@ else:
 extensions = [
     Extension(
         "IT8951.spi",
-        ["IT8951/spi"+ext],
-        libraries=['bcm2835'],
+        ["IT8951/spi"+ext]
     )
 ]
 
@@ -27,7 +26,7 @@ if USE_CYTHON:
     extensions = cythonize(extensions)
 
 setup(
-    name = "IT8951",
+    name="IT8951",
     packages=['IT8951'],
-    ext_modules = extensions
+    ext_modules=extensions
 )

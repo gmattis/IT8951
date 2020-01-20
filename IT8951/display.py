@@ -1,4 +1,3 @@
-
 import tkinter as tk
 from PIL import Image, ImageChops, ImageTk
 
@@ -8,6 +7,7 @@ try:
     from .interface import EPD
 except ModuleNotFoundError:
     EPD = None
+
 
 class AutoDisplay:
     '''

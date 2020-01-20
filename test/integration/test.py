@@ -25,7 +25,7 @@ def main():
         from IT8951.display import AutoEPDDisplay
 
         print('Initializing EPD...')
-        display = AutoEPDDisplay(vcom=-2.06)
+        display = AutoEPDDisplay(vcom=-1.65)
         print('VCOM set to', display.epd.get_vcom())
 
         tests += [print_system_info]
@@ -44,6 +44,8 @@ def main():
     for t in tests:
         t(display)
         sleep(1)
+
+    display.epd.standby()
 
     print('Done!')
 

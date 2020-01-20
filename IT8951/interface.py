@@ -1,4 +1,3 @@
-
 from . import constants
 from .constants import Commands, Registers, DisplayModes, PixelModes
 from .spi import SPI
@@ -8,6 +7,7 @@ from os import geteuid
 from sys import exit
 
 import numpy as np
+
 
 class EPD:
     '''
@@ -74,7 +74,7 @@ class EPD:
             dimensions are assumed to be the dimensions of the display area.
         '''
 
-        endian_type = constants.EndianTypes.LITTLE
+        endian_type = constants.EndianTypes.BIG
         pixel_format = constants.PixelModes.M_4BPP
 
         if xy is None:
@@ -103,8 +103,8 @@ class EPD:
         self.width  = data[0]
         self.height = data[1]
         self.img_buf_address = data[3] << 16 | data[2]
-        self.firmware_version = ''.join([chr(x>>8)+chr(x&0xFF) for x in data[4:12]])
-        self.lut_version      = ''.join([chr(x>>8)+chr(x&0xFF) for x in data[12:20]])
+        self.firmware_version = ''.join([chr(x >> 8)+chr(x & 0xFF) for x in data[4:12]])
+        self.lut_version      = ''.join([chr(x >> 8)+chr(x & 0xFF) for x in data[12:20]])
 
     def get_vcom(self):
         '''
@@ -112,14 +112,14 @@ class EPD:
         '''
         self.spi.write_cmd(Commands.VCOM, 0)
         vcom_int = self.spi.read_int()
-        return -vcom_int/1000
+        return -vcom_int / 1000
 
     def set_vcom(self, vcom):
         '''
         Set the device's VCOM voltage
         '''
         self._validate_vcom(vcom)
-        vcom_int = int(-1000*vcom)
+        vcom_int = int(-1000 * vcom)
         self.spi.write_cmd(Commands.VCOM, 1, vcom_int)
 
     def _validate_vcom(self, vcom):
@@ -154,10 +154,7 @@ class EPD:
                 rtn |= (buf[i::4] & 0xFE) >> 4
 
         elif pixel_format == PixelModes.M_4BPP:
-            rtn = np.zeros((buf.size//4,), dtype=np.uint16)
-            for i in range(3, -1, -1):
-                rtn <<= 4
-                rtn |= buf[i::4] >> 4
+            rtn = bytes(np.bitwise_or(buf[::2] >> 4 << 4, buf[1::2] >> 4))
 
         return rtn
 
@@ -171,7 +168,7 @@ class EPD:
         self.spi.write_cmd(Commands.SLEEP)
 
     def wait_display_ready(self):
-        while(self.read_register(Registers.LUTAFSR)):
+        while self.read_register(Registers.LUTAFSR):
             sleep(0.01)
 
     def _load_img_start(self, endian_type, pixel_format, rotate_mode):
@@ -202,7 +199,7 @@ class EPD:
     def _set_img_buf_base_addr(self, address):
         word0 = address >> 16
         word1 = address & 0xFFFF
-        self.write_register(Registers.LISAR+2, word0)
+        self.write_register(Registers.LISAR + 2, word0)
         self.write_register(Registers.LISAR, word1)
 
     ##########

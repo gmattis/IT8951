@@ -1,4 +1,3 @@
-
 # command codes
 class Commands:
     SYS_RUN      = 0x01
@@ -20,6 +19,7 @@ class Commands:
     DPY_BUF_AREA = 0x037
     VCOM         = 0x039
 
+
 # rotation modes
 # TODO: make sure CW/CCW are correct
 class Rotate:
@@ -28,12 +28,14 @@ class Rotate:
     CCW  = 3
     FLIP = 2  # 180 degree rotation
 
+
 # TODO: get rid of these M's
 class PixelModes:
     M_2BPP = 0
     M_3BPP = 1
     M_4BPP = 2
     M_8BPP = 3
+
 
 # these waveform modes are described here:
 # http://www.waveshare.net/w/upload/c/c4/E-paper-mode-declaration.pdf
@@ -47,16 +49,20 @@ class DisplayModes:
     A2    = 6
     DU4   = 7
 
+
 class EndianTypes:
     LITTLE = 0
     BIG    = 1
+
 
 class AutoLUT:
     ENABLE  = 1
     DISABLE = 0
 
+
 # LUT engine status?
 ALL_LUTE_BUSY = 0xFFFF
+
 
 class Registers:
     DBASE = 0x1000           # base address. register RW access for I80 only

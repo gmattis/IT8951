@@ -2,7 +2,7 @@ from . import constants
 from .constants import Commands, Registers, DisplayModes, PixelModes
 from .spi import SPI
 
-from time import sleep
+from time import sleep, time
 from os import geteuid
 from sys import exit
 
@@ -33,6 +33,9 @@ class EPD:
         self.spi = SPI()
 
         self.spi.reset()
+
+        self.run()
+        self.wait_display_ready()
 
         self.width            = None
         self.height           = None
@@ -154,7 +157,10 @@ class EPD:
                 rtn |= (buf[i::4] & 0xFE) >> 4
 
         elif pixel_format == PixelModes.M_4BPP:
+            print("Pack pixels")
+            t = time()
             rtn = bytes(np.bitwise_or(buf[::2] >> 4 << 4, buf[1::2] >> 4))
+            print("Took", time() - t)
 
         return rtn
 

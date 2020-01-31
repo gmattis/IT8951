@@ -1,5 +1,5 @@
 
-from time import sleep
+from time import sleep, time
 import argparse
 
 from test_functions import *
@@ -42,11 +42,12 @@ def main():
     ]
 
     for t in tests:
+        t_start = time()
         t(display)
+        print("Test took", time() - t_start)
         sleep(1)
 
     display.epd.standby()
-
     print('Done!')
 
 if __name__ == '__main__':

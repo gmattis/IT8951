@@ -34,7 +34,7 @@ class SPI:
             bcm2835_gpio_fsel(self.HRDY, BCM2835_GPIO_FSEL_INPT)
             bcm2835_gpio_set_pud(self.HRDY, BCM2835_GPIO_PUD_DOWN)
 
-        self._write_cs(False)
+        # self._write_cs(False)
 
     def __del__(self):
         bcm2835_spi_end()
@@ -125,8 +125,7 @@ class SPI:
         Write the pixels in pixbuf to the device. Pixbuf should be an array of
 	    16-bit ints, containing packed pixel information.
         '''
-        print("Write pixels")
-        t = time.time()
+        print("- Writing pixels")
         preamble = 0x0000
 
         # we inline the wait_ready here for speed
@@ -142,7 +141,6 @@ class SPI:
         bcm2835_spi_transfern(pixbuf, len(pixbuf))
 
         self._write_cs(False)
-        print("Took", time.time() - t)
 
     # the following functions are higher-level for writing and reading
     # various types of data to and from the device

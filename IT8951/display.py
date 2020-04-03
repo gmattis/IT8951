@@ -51,6 +51,7 @@ class AutoDisplay:
         Write the full image to the device, and display it using mode
         '''
 
+        print("- Start updating")
         self.update(self._get_frame_buf().getdata(), (0,0), (self.width, self.height), mode)
 
         if self.track_gray:
@@ -169,7 +170,6 @@ class AutoEPDDisplay(AutoDisplay):
     '''
 
     def __init__(self, epd=None, vcom=-2.06, **kwargs):
-
         if epd is None:
             if EPD is None:
                 raise RuntimeError('Problem importing EPD interface. Did you build the '
@@ -181,21 +181,13 @@ class AutoEPDDisplay(AutoDisplay):
         AutoDisplay.__init__(self, self.epd.width, self.epd.height, **kwargs)
 
     def update(self, data, xy, dims, mode):
+        self.epd.wait_display_ready()
 
         # send image to controller
-        self.epd.wait_display_ready()
-        self.epd.load_img_area(
-            data,
-            xy=xy,
-            dims=dims
-        )
+        self.epd.load_img_area(data, xy=xy, dims=dims)
 
         # display sent image
-        self.epd.display_area(
-            xy,
-            dims,
-            mode
-        )
+        self.epd.display_area(xy, dims, mode)
 
 
 class VirtualEPDDisplay(AutoDisplay):

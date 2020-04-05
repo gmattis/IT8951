@@ -96,7 +96,7 @@ def _place_text(img, text, x_offset=0, y_offset=0):
     fontsize = 80
 
     draw = ImageDraw.Draw(img)
-    font = ImageFont.truetype('/usr/share/fonts/truetype/freefont/FreeSans.ttf', fontsize)
+    font = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf', fontsize)
 
     img_width, img_height = img.size
     text_width, _ = font.getsize(text)

@@ -1,3 +1,5 @@
+import numpy as np
+
 from . import constants
 from .constants import Commands, Registers, DisplayModes, PixelModes
 from .spi import SPI
@@ -5,8 +7,6 @@ from .spi import SPI
 from time import sleep
 from os import geteuid
 from sys import exit
-
-import numpy as np
 
 
 class EPD:
@@ -33,12 +33,6 @@ class EPD:
         self.spi = SPI()
 
         self.spi.reset()
-
-        #sleep(0.5)
-        #self.run()
-        #sleep(0.5)
-
-        self.wait_display_ready()
 
         self.width            = None
         self.height           = None
@@ -106,11 +100,11 @@ class EPD:
         '''
         self.spi.write_cmd(Commands.GET_DEV_INFO)
         data = self.spi.read_data(20)
-        self.width  = data[0]
+        self.width = data[0]
         self.height = data[1]
         self.img_buf_address = data[3] << 16 | data[2]
         self.firmware_version = ''.join([chr(x >> 8)+chr(x & 0xFF) for x in data[4:12]])
-        self.lut_version      = ''.join([chr(x >> 8)+chr(x & 0xFF) for x in data[12:20]])
+        self.lut_version = ''.join([chr(x >> 8)+chr(x & 0xFF) for x in data[12:20]])
 
     def get_vcom(self):
         '''
@@ -129,7 +123,7 @@ class EPD:
         self.spi.write_cmd(Commands.VCOM, 1, vcom_int)
 
     @staticmethod
-    def _validate_vcom(self, vcom):
+    def _validate_vcom(vcom):
         # TODO: figure out the actual limits for vcom
         if not -5 < vcom < 0:
             raise ValueError("vcom must be between -5 and 0")
@@ -140,7 +134,7 @@ class EPD:
         Take a buffer where each byte represents a pixel, and pack it
         into 16-bit words according to pixel_format.
         '''
-        buf = np.array(buf, dtype=np.ubyte)
+        buf = np.asarray(buf, dtype=np.ubyte).flatten()
 
         if pixel_format == PixelModes.M_8BPP:
             rtn = np.zeros((buf.size//2,), dtype=np.uint16)

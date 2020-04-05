@@ -51,8 +51,7 @@ class AutoDisplay:
         Write the full image to the device, and display it using mode
         '''
 
-        print("- Start updating")
-        self.update(self._get_frame_buf().getdata(), (0,0), (self.width, self.height), mode)
+        self.update(self._get_frame_buf(), (0, 0), (self.width, self.height), mode)
 
         if self.track_gray:
             if mode == DisplayModes.DU:
@@ -137,11 +136,11 @@ class AutoDisplay:
         Round a bounding box so the edges are divisible by round_to
         '''
         minx, miny, maxx, maxy = box
-        minx -= minx%round_to
-        maxx += round_to-1 - (maxx-1)%round_to
-        miny -= miny%round_to
-        maxy += round_to-1 - (maxy-1)%round_to
-        return (minx, miny, maxx, maxy)
+        minx -= minx % round_to
+        maxx += round_to-1 - (maxx-1) % round_to
+        miny -= miny % round_to
+        maxy += round_to-1 - (maxy-1) % round_to
+        return minx, miny, maxx, maxy
 
     @staticmethod
     def _merge_bbox(a, b):
@@ -158,7 +157,7 @@ class AutoDisplay:
         miny = min(a[1], b[1])
         maxx = max(a[2], b[2])
         maxy = max(a[3], b[3])
-        return (minx, miny, maxx, maxy)
+        return minx, miny, maxx, maxy
 
     def update(self, data, xy, dims, mode):
         raise NotImplementedError
@@ -212,7 +211,7 @@ class VirtualEPDDisplay(AutoDisplay):
         data_img = Image.frombytes(self.frame_buf.mode, dims, bytes(data))
         self.pil_img.paste(data_img, box=xy)
         self.tk_img = ImageTk.PhotoImage(self.pil_img)
-        self.panel.configure(image=self.tk_img) # not sure if this is actually necessary
+        self.panel.configure(image=self.tk_img)  # not sure if this is actually necessary
 
         # allow Tk to do whatever it needs to do
         self.root.update()

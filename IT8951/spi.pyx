@@ -1,9 +1,34 @@
 # cython: language_level=3
 # cython: profile=True
 
+from cpython cimport array
+import array
 import time
 
-from libbcm2835._bcm2835 import *
+cdef extern from "bcm2835.h":
+     int bcm2835_init()
+     int bcm2835_close()
+
+     void bcm2835_gpio_fsel(int, int)
+     void bcm2835_gpio_write(int, int)
+     void bcm2835_gpio_set_pud(int, int)
+     int bcm2835_gpio_lev(int)
+     cdef int BCM2835_GPIO_FSEL_OUTP
+     cdef int BCM2835_GPIO_FSEL_INPT
+     cdef int BCM2835_GPIO_PUD_DOWN
+     cdef int LOW
+     cdef int HIGH
+
+     int bcm2835_spi_begin()
+     void bcm2835_spi_setBitOrder(int)
+     void bcm2835_spi_setDataMode(int)
+     void bcm2835_spi_setClockDivider(int)
+     int bcm2835_spi_transfer(int)
+     void bcm2835_spi_transfern(char*, int)
+     void bcm2835_spi_end()
+     cdef int BCM2835_SPI_BIT_ORDER_MSBFIRST
+     cdef int BCM2835_SPI_MODE0
+     cdef int BCM2835_SPI_CLOCK_DIVIDER_32
 
 
 class SPI:
@@ -34,7 +59,7 @@ class SPI:
             bcm2835_gpio_fsel(self.HRDY, BCM2835_GPIO_FSEL_INPT)
             bcm2835_gpio_set_pud(self.HRDY, BCM2835_GPIO_PUD_DOWN)
 
-        # self._write_cs(False)
+        self._write_cs(False)
 
     def __del__(self):
         bcm2835_spi_end()
@@ -42,9 +67,9 @@ class SPI:
 
     def reset(self):
         assert self.RESET is not None
-        self._write_cs(True)
+        bcm2835_gpio_write(self.RESET, LOW)
         time.sleep(0.1)
-        self._write_cs(False)
+        bcm2835_gpio_write(self.RESET   , HIGH)
 
     def _write_cs(self, should_listen):
         '''
@@ -73,12 +98,14 @@ class SPI:
         # allocate the array we will return
         # initializing it is unnecessary here, but read() is not called
         # with large arrays so this should not be a performance problem
+        cdef array.array rtn = array.array('H', (0,)*count)
+        cdef unsigned short[:] crtn = rtn
 
         self.wait_ready()
 
         self._write_cs(True)
 
-        bcm2835_spi_transfer(preamble >> 8)
+        bcm2835_spi_transfer(preamble>>8)
         bcm2835_spi_transfer(preamble)
 
         self.wait_ready()
@@ -89,11 +116,10 @@ class SPI:
 
         self.wait_ready()
 
-        rtn = [0 for _ in range(count)]
-
+        cdef int i
         for i in range(count):
-            rtn[i] = bcm2835_spi_transfer(0x00) << 8
-            rtn[i] |= bcm2835_spi_transfer(0x00)
+            crtn[i] = bcm2835_spi_transfer(0x00)<<8
+            crtn[i] |= bcm2835_spi_transfer(0x00)
 
         self._write_cs(False)
 
@@ -104,19 +130,22 @@ class SPI:
         Send preamble, and then write the data in ary (16-bit unsigned ints) over SPI
         '''
 
+        cdef array.array buf = array.array('H', ary)
+        cdef unsigned short[:] cbuf = buf
+
         self.wait_ready()
 
         self._write_cs(True)
 
-        bcm2835_spi_transfer(preamble >> 8)
+        bcm2835_spi_transfer(preamble>>8)
         bcm2835_spi_transfer(preamble)
 
         self.wait_ready()
 
         # TODO: what's the best way to do this in cython?
         for i in range(len(ary)):
-            bcm2835_spi_transfer(ary[i] >> 8)
-            bcm2835_spi_transfer(ary[i])
+            bcm2835_spi_transfer(buf[i]>>8)
+            bcm2835_spi_transfer(buf[i])
 
         self._write_cs(False)
 
@@ -125,7 +154,7 @@ class SPI:
         Write the pixels in pixbuf to the device. Pixbuf should be an array of
 	    16-bit ints, containing packed pixel information.
         '''
-        print("- Writing pixels")
+
         preamble = 0x0000
 
         # we inline the wait_ready here for speed
